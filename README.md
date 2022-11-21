@@ -151,9 +151,9 @@ BpdaAdapter.py: Same modification as utils_tf_device.py as well as modifying it 
 
 robustml_apgd.py: Modified robustml_attack.py from Obfuscated Gradients to use BpdaAdapter.py in order to perform my new APGD+BPDA attack. This involved making significant modifications to the attack itself (lines 12-59).
 
-robustml_apgd.py: Modified robustml_attack.py from Obfuscated Gradients to use Cross Entropy Loss in order to more directly compare to the APGD+BPDA attack, which also uses Cross Entropy Loss. This meant defining the Cross Entropy Loss and passing it correctly to the optimizer (lines 38-53)
+robustml_attack_ce.py: Modified robustml_attack.py from Obfuscated Gradients to use Cross Entropy Loss in order to more directly compare to the APGD+BPDA attack, which also uses Cross Entropy Loss. This meant defining the Cross Entropy Loss and passing it correctly to the optimizer (lines 38-53)
 
-project_demo.ipynb: Used minor parts of robustml_attack.py from Obfuscated gradients to setup the attack (first and second cell), but otherwise original.
+project_demo.ipynb: Used minor parts of robustml_attack.py from Obfuscated gradients to setup the evaluation (second cell), but otherwise original.
 
 
 ## Datasets:
