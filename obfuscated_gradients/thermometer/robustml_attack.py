@@ -1,6 +1,6 @@
 import robustml
-from robustml_model import Thermometer, LEVELS
-from discretization_utils import discretize_uniform
+from .robustml_model import Thermometer, LEVELS
+from .discretization_utils import discretize_uniform
 import sys
 import argparse
 import tensorflow as tf
@@ -107,29 +107,8 @@ def main():
         deterministic=True,
         debug=args.debug,
     )
-    
-    print('attack success rate: %.2f%% (over %d data points)' % (success_rate*100, args.end-args.start))
-    
-    # from PIL import Image
-    
-    # x, y = provider[1]
-    # print("Start attack")
-    # adv = attack.run(np.copy(x), y, None)
-    
-    # original = np.ndarray.flatten(x)
-    # perturbed = np.ndarray.flatten(adv)
-    
-    # print(np.min(perturbed))
-    # print(np.max(perturbed))
-    # print(np.linalg.norm(original - perturbed, ord=np.inf))
-    
-    # im = Image.fromarray((x*255).astype(np.uint8))
-    # im.save("x.jpeg")
-    
-    # im = Image.fromarray((adv*255).astype(np.uint8))
-    # im.save("adv.jpeg")
 
-    # print('attack success rate: %.2f%% (over %d data points)' % (success_rate*100, args.end-args.start))
+    print('attack success rate: %.2f%% (over %d data points)' % (success_rate*100, args.end-args.start))
 
 if __name__ == '__main__':
     main()

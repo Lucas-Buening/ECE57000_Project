@@ -1,14 +1,12 @@
 import robustml
-from robustml_model import Thermometer, LEVELS
-from discretization_utils import discretize_uniform
-import sys
+from obfuscated_gradients.thermometer.robustml_model import Thermometer, LEVELS
+from obfuscated_gradients.thermometer.discretization_utils import discretize_uniform
 import argparse
 import tensorflow as tf
 import numpy as np
 
 import torch
-import utils_tf_device
-import autopgd_base as apgd
+import autoattack.autopgd_base as apgd
 
 from BpdaAdapter import BpdaAdapter
 

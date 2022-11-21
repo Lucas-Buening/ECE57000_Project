@@ -1,7 +1,6 @@
 import robustml
-from robustml_model import Thermometer, LEVELS
-from discretization_utils import discretize_uniform
-import sys
+from obfuscated_gradients.thermometer.robustml_model import Thermometer, LEVELS
+from obfuscated_gradients.thermometer.discretization_utils import discretize_uniform
 import argparse
 import tensorflow as tf
 import numpy as np
@@ -12,43 +11,42 @@ class Attack:
         self.model = model
         self.num_steps = num_steps
         self.step_size = step_size
-
-        self.xs = tf.Variable(np.zeros((1, 32, 32, 3), dtype=np.float32),
+        self.epsilon = epsilon*255
+        
+        self.x = tf.Variable(np.zeros((1, 32, 32, 3), dtype=np.float32),
                                     name='modifier')
-        self.orig_xs = tf.placeholder(tf.float32, [None, 32, 32, 3])
-
-        self.ys = tf.placeholder(tf.int32, [None])
-
-        self.epsilon = epsilon * 255
-
-        delta = tf.clip_by_value(self.xs, 0, 255) - self.orig_xs
+        self.orig_x = tf.placeholder(tf.float32, [None, 32, 32, 3])
+        self.y = tf.placeholder(tf.int32, [None])
+        
+        # Clip image to within the given epsilon
+        delta = tf.clip_by_value(self.x, 0, 255) - self.orig_x
         delta = tf.clip_by_value(delta, -self.epsilon, self.epsilon)
+        self.do_clip_x = tf.assign(self.x, self.orig_x+delta)
 
-        self.do_clip_xs = tf.assign(self.xs, self.orig_xs+delta)
-
+        # Approximation of the gradient for the backwards pass
         compare = tf.constant((256.0/LEVELS)*np.arange(-1,LEVELS-1).reshape((1,1,1,1,LEVELS)),
                               dtype=tf.float32)
-        inner = tf.reshape(self.xs,(-1, 32, 32, 3, 1)) - compare
+        inner = tf.reshape(self.x,(-1, 32, 32, 3, 1)) - compare
         inner = tf.maximum(tf.minimum(inner/(256.0/LEVELS), 1.0), 0.0)
-
         self.therm = tf.reshape(inner, (-1, 32, 32, LEVELS*3))
+        self.logits = model(self.therm)
 
-        self.logits = logits = model(self.therm)
-
-        self.uniform = discretize_uniform(self.xs/255.0, levels=LEVELS, thermometer=True)
+        # Actual function for the forward pass
+        self.uniform = discretize_uniform(self.x/255.0, levels=LEVELS, thermometer=True)
         self.real_logits = model(self.uniform)
-
-        label_mask = tf.one_hot(self.ys, 10)
-        correct_logit = tf.reduce_sum(label_mask * logits, axis=1)
-        wrong_logit = tf.reduce_max((1-label_mask) * logits - 1e4*label_mask, axis=1)
-
-        self.loss = (correct_logit - wrong_logit)
+        
+        # Use cross entropy loss
+        self.xent = tf.nn.sparse_softmax_cross_entropy_with_logits(
+            logits=self.logits, labels=self.y)
+        self.neg_xent = tf.math.negative(self.xent)     
 
         start_vars = set(x.name for x in tf.global_variables())
         optimizer = tf.train.AdamOptimizer(step_size*1)
-        self.grad = tf.sign(tf.gradients(self.loss, self.xs)[0])
-
-        grad,var = optimizer.compute_gradients(self.loss, [self.xs])[0]
+        
+        # Use the negative loss in order to maximize it rather than minimize it
+        self.grad = tf.gradients(self.neg_xent, self.x)[0]
+        grad,var = optimizer.compute_gradients(self.neg_xent, [self.x])[0]
+        
         self.train = optimizer.apply_gradients([(tf.sign(grad),var)])
 
         end_vars = tf.global_variables()
@@ -56,24 +54,20 @@ class Attack:
 
     def perturb(self, x, y, sess):
         sess.run(tf.variables_initializer(self.new_vars))
-        sess.run(self.xs.initializer)
-        sess.run(self.do_clip_xs,
-                 {self.orig_xs: x})
-
-        for i in range(self.num_steps):
-
+        sess.run(self.x.initializer)
+        
+        sess.run(self.do_clip_x, {self.orig_x: x})
+        for _ in range(self.num_steps):
             t = sess.run(self.uniform)
-            sess.run(self.train, feed_dict={self.ys: y,
-                                            self.therm: t})
-            sess.run(self.do_clip_xs,
-                     {self.orig_xs: x})
+            sess.run(self.train, feed_dict={self.y: y, self.therm: t})
+            sess.run(self.do_clip_x, {self.orig_x: x})
 
-        return sess.run(self.xs)
+        return sess.run(self.x)
 
     def run(self, x, y, target):
         if target is not None:
             raise NotImplementedError
-        return self.perturb(np.array([x]) * 255.0, [y], self._sess)[0] / 255.0
+        return self.perturb(np.array([x*255]), [y], self._sess)[0]/255
 
 def main():
     parser = argparse.ArgumentParser()

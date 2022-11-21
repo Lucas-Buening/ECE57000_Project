@@ -34,7 +34,7 @@ fetch() {
     tar xzf $f
 }
 
-cd ..
+# cd ..
 fetch https://github.com/anishathalye/obfuscated-gradients/releases/download/v0/cifar10_data.tgz cifar10_data 6d011cbb029aec2c18dc10bce32adea9e27c2068
 mkdir -p models
 cd models

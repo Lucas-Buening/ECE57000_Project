@@ -1,8 +1,8 @@
 import robustml
 import tensorflow as tf
-from discretization_utils import discretize_uniform
+from .discretization_utils import discretize_uniform
 import numpy as np
-from cifar_model import Model
+from .cifar_model import Model
 
 LEVELS = 16
 
@@ -14,7 +14,7 @@ class Thermometer(robustml.model.Model):
         self._encode = discretize_uniform(self._x/255.0, levels=LEVELS, thermometer=True)
 
         self._model = Model(
-            '../models/thermometer_advtrain/',
+            './models/thermometer_advtrain/',
             sess,
             tiny=False,
             mode='eval',
