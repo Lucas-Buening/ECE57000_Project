@@ -7,25 +7,25 @@ Some of the code relies on older versions of several major packages, such as Ten
 Once you have Anaconda installed, open the Anaconda Prompt (terminal) and navigate to the where you have downloaded the code to. This folder should contain project_env.yml. Run the following command, replacing <environment_name> with a unique name:
 
 ```
-    conda env create -n <environment_name> -f project_env.yml
+conda env create -n <environment_name> -f project_env.yml
 ```
 
 Run the following command to check that the environment was created properly:
 
 ```
-    conda env list
+conda env list
 ```
 
 Once the environment has been created, activate it using the following command:
 
 ```
-    conda activate <environment_name>
+conda activate <environment_name>
 ```
 
 When you are done use the following command to deactivate the environment:
 
 ```
-    conda deactivate
+conda deactivate
 ```
 
 If you are having trouble, then refer to the guide [here](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html).
@@ -35,7 +35,7 @@ If you are having trouble, then refer to the guide [here](https://conda.io/proje
 Navigate to the code folder, which should contain setup.sh. Open a terminal and run the following command:
 
 ```
-    bash setup.sh
+bash setup.sh
 ```
 
 On Windows, you will need a bash port to run this command. I used [win-bash](https://win-bash.sourceforge.net/), but other bash emulators may work.
