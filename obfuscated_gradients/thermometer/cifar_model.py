@@ -20,19 +20,19 @@ class Model(object):
     self.tiny = tiny
     self.thermometer = thermometer
     self.levels = levels
-    with tf.variable_scope('model', reuse=tf.AUTO_REUSE):
+    with tf.compat.v1.variable_scope('model', reuse=tf.compat.v1.AUTO_REUSE):
       print("Called")
       self.first = True
       self._build_model()
       self.first = False
     if restore:
       path = tf.train.latest_checkpoint(restore)
-      saver = tf.train.Saver()
+      saver = tf.compat.v1.train.Saver()
       saver.restore(sess, path)
       print("restored")
       
   def __call__(self, xs, **kwargs):
-    with tf.variable_scope('model', reuse=tf.AUTO_REUSE):
+    with tf.compat.v1.variable_scope('model', reuse=tf.compat.v1.AUTO_REUSE):
       return self._build_model(xs)
     
   def add_internal_summaries(self):
@@ -45,14 +45,14 @@ class Model(object):
   def _build_model(self, x_input = None):
     assert self.mode == 'train' or self.mode == 'eval'
     """Build the core model within the graph."""
-    with tf.variable_scope('input'):
+    with tf.compat.v1.variable_scope('input'):
 
       if x_input == None:
         assert self.first
         ch = 3
         if self.thermometer:
           ch = self.levels*3
-        x_input = self.x_input = tf.placeholder(
+        x_input = self.x_input = tf.compat.v1.placeholder(
           tf.float32,
           shape=[None, 32, 32, ch], name='x_input_model')
       else:
@@ -60,7 +60,7 @@ class Model(object):
       
 
       if self.first:
-        self.y_input = tf.placeholder(tf.int64, shape=None, name='y_input_model')
+        self.y_input = tf.compat.v1.placeholder(tf.int64, shape=None, name='y_input_model')
 
 
       input_standardized = tf.map_fn(lambda img: tf.image.per_image_standardization(img),
@@ -87,34 +87,34 @@ class Model(object):
 
     # Update hps.num_residual_units to 9
 
-    with tf.variable_scope('unit_1_0'):
+    with tf.compat.v1.variable_scope('unit_1_0'):
       x = res_func(x, filters[0], filters[1], self._stride_arr(strides[0]),
                    activate_before_residual[0])
     for i in range(1, layers):
-      with tf.variable_scope('unit_1_%d' % i):
+      with tf.compat.v1.variable_scope('unit_1_%d' % i):
         x = res_func(x, filters[1], filters[1], self._stride_arr(1), False)
 
-    with tf.variable_scope('unit_2_0'):
+    with tf.compat.v1.variable_scope('unit_2_0'):
       x = res_func(x, filters[1], filters[2], self._stride_arr(strides[1]),
                    activate_before_residual[1])
     for i in range(1, layers):
-      with tf.variable_scope('unit_2_%d' % i):
+      with tf.compat.v1.variable_scope('unit_2_%d' % i):
         x = res_func(x, filters[2], filters[2], self._stride_arr(1), False)
 
-    with tf.variable_scope('unit_3_0'):
+    with tf.compat.v1.variable_scope('unit_3_0'):
       x = res_func(x, filters[2], filters[3], self._stride_arr(strides[2]),
                    activate_before_residual[2])
     for i in range(1, layers):
-      with tf.variable_scope('unit_3_%d' % i):
+      with tf.compat.v1.variable_scope('unit_3_%d' % i):
         x = res_func(x, filters[3], filters[3], self._stride_arr(1), False)
 
-    with tf.variable_scope('unit_last'):
+    with tf.compat.v1.variable_scope('unit_last'):
       x = self._batch_norm('final_bn', x)
       x = self._relu(x, 0.1)
       x = self._global_avg_pool(x)
 
     if self.first:
-      with tf.variable_scope('logit'):
+      with tf.compat.v1.variable_scope('logit'):
         self.pre_softmax = self._fully_connected(x, 10)
   
       self.predictions = tf.argmax(self.pre_softmax, 1)
@@ -124,7 +124,7 @@ class Model(object):
       self.accuracy = tf.reduce_mean(
           tf.cast(self.correct_prediction, tf.float32))
   
-      with tf.variable_scope('costs'):
+      with tf.compat.v1.variable_scope('costs'):
         self.y_xent = tf.nn.sparse_softmax_cross_entropy_with_logits(
             logits=self.pre_softmax, labels=self.y_input)
         self.xent = tf.reduce_sum(self.y_xent, name='y_xent')
@@ -132,7 +132,7 @@ class Model(object):
         self.weight_decay_loss = self._decay()
       return self.pre_softmax
     else:
-      with tf.variable_scope('logit'):
+      with tf.compat.v1.variable_scope('logit'):
         return self._fully_connected(x, 10)
 
   def _batch_norm(self, name, x):
@@ -151,48 +151,48 @@ class Model(object):
                 activate_before_residual=False):
     """Residual unit with 2 sub layers."""
     if activate_before_residual:
-      with tf.variable_scope('shared_activation'):
+      with tf.compat.v1.variable_scope('shared_activation'):
         x = self._batch_norm('init_bn', x)
         x = self._relu(x, 0.1)
         orig_x = x
     else:
-      with tf.variable_scope('residual_only_activation'):
+      with tf.compat.v1.variable_scope('residual_only_activation'):
         orig_x = x
         x = self._batch_norm('init_bn', x)
         x = self._relu(x, 0.1)
 
-    with tf.variable_scope('sub1'):
+    with tf.compat.v1.variable_scope('sub1'):
       x = self._conv('conv1', x, 3, in_filter, out_filter, stride)
 
-    with tf.variable_scope('sub2'):
+    with tf.compat.v1.variable_scope('sub2'):
       x = self._batch_norm('bn2', x)
       x = self._relu(x, 0.1)
       x = self._conv('conv2', x, 3, out_filter, out_filter, [1, 1, 1, 1])
 
-    with tf.variable_scope('sub_add'):
+    with tf.compat.v1.variable_scope('sub_add'):
       if in_filter != out_filter:
-        orig_x = tf.nn.avg_pool(orig_x, stride, stride, 'VALID')
+        orig_x = tf.nn.avg_pool2d(orig_x, stride, stride, 'VALID')
         orig_x = tf.pad(
             orig_x, [[0, 0], [0, 0], [0, 0],
                      [(out_filter-in_filter)//2, (out_filter-in_filter)//2]])
       x += orig_x
 
-    tf.logging.debug('image after unit %s', x.get_shape())
+    tf.compat.v1.logging.debug('image after unit %s', x.get_shape())
     return x
 
   def _decay(self):
     """L2 weight decay loss."""
     costs = []
-    for var in tf.trainable_variables():
+    for var in tf.compat.v1.trainable_variables():
       if var.op.name.find('DW') > 0:
         costs.append(tf.nn.l2_loss(var))
     return tf.add_n(costs)
 
   def _conv(self, name, x, filter_size, in_filters, out_filters, strides):
     """Convolution."""
-    with tf.variable_scope(name):
+    with tf.compat.v1.variable_scope(name):
       n = filter_size * filter_size * out_filters
-      kernel = tf.get_variable(
+      kernel = tf.compat.v1.get_variable(
           'DW', [filter_size, filter_size, in_filters, out_filters],
           tf.float32, initializer=tf.random_normal_initializer(
               stddev=np.sqrt(2.0/n)))
@@ -209,12 +209,12 @@ class Model(object):
     for ii in range(num_non_batch_dimensions - 1):
       prod_non_batch_dimensions *= int(x.shape[ii + 1])
     x = tf.reshape(x, [tf.shape(x)[0], -1])
-    w = tf.get_variable(
+    w = tf.compat.v1.get_variable(
         'DW', [prod_non_batch_dimensions, out_dim],
-        initializer=tf.uniform_unit_scaling_initializer(factor=1.0))
-    b = tf.get_variable('biases', [out_dim],
+        initializer=tf.compat.v1.uniform_unit_scaling_initializer(factor=1.0))
+    b = tf.compat.v1.get_variable('biases', [out_dim],
                         initializer=tf.constant_initializer())
-    return tf.nn.xw_plus_b(x, w, b)
+    return tf.compat.v1.nn.xw_plus_b(x, w, b)
 
   def _global_avg_pool(self, x):
     assert x.get_shape().ndims == 4

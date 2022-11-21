@@ -15,13 +15,13 @@ class Attack:
         
         self.x = tf.Variable(np.zeros((1, 32, 32, 3), dtype=np.float32),
                                     name='modifier')
-        self.orig_x = tf.placeholder(tf.float32, [None, 32, 32, 3])
-        self.y = tf.placeholder(tf.int32, [None])
+        self.orig_x = tf.compat.v1.placeholder(tf.float32, [None, 32, 32, 3])
+        self.y = tf.compat.v1.placeholder(tf.int32, [None])
         
         # Clip image to within the given epsilon
         delta = tf.clip_by_value(self.x, 0, 255) - self.orig_x
         delta = tf.clip_by_value(delta, -self.epsilon, self.epsilon)
-        self.do_clip_x = tf.assign(self.x, self.orig_x+delta)
+        self.do_clip_x = tf.compat.v1.assign(self.x, self.orig_x+delta)
 
         # Approximation of the gradient for the backwards pass
         compare = tf.constant((256.0/LEVELS)*np.arange(-1,LEVELS-1).reshape((1,1,1,1,LEVELS)),
@@ -40,8 +40,8 @@ class Attack:
             logits=self.logits, labels=self.y)
         self.neg_xent = tf.math.negative(self.xent)     
 
-        start_vars = set(x.name for x in tf.global_variables())
-        optimizer = tf.train.AdamOptimizer(step_size*1)
+        start_vars = set(x.name for x in tf.compat.v1.global_variables())
+        optimizer = tf.compat.v1.train.AdamOptimizer(step_size*1)
         
         # Use the negative loss in order to maximize it rather than minimize it
         self.grad = tf.gradients(self.neg_xent, self.x)[0]
@@ -49,11 +49,11 @@ class Attack:
         
         self.train = optimizer.apply_gradients([(tf.sign(grad),var)])
 
-        end_vars = tf.global_variables()
+        end_vars = tf.compat.v1.global_variables()
         self.new_vars = [x for x in end_vars if x.name not in start_vars]
 
     def perturb(self, x, y, sess):
-        sess.run(tf.variables_initializer(self.new_vars))
+        sess.run(tf.compat.v1.variables_initializer(self.new_vars))
         sess.run(self.x.initializer)
         
         sess.run(self.do_clip_x, {self.orig_x: x})
@@ -79,7 +79,7 @@ def main():
     args = parser.parse_args()
 
     # set up TensorFlow session
-    sess = tf.Session()
+    sess = tf.compat.v1.Session()
 
     # initialize a model
     model = Thermometer(sess)

@@ -92,11 +92,11 @@ class AugmentedCIFAR10Data(object):
         self.image_size = 32
 
         # create augmentation computational graph
-        self.x_input_placeholder = tf.placeholder(tf.float32, shape=[None, 32, 32, 3])
-        padded = tf.map_fn(lambda img: tf.image.resize_image_with_crop_or_pad(
+        self.x_input_placeholder = tf.compat.v1.placeholder(tf.float32, shape=[None, 32, 32, 3])
+        padded = tf.map_fn(lambda img: tf.compat.v1.image.resize_image_with_crop_or_pad(
             img, self.image_size + 4, self.image_size + 4),
             self.x_input_placeholder)
-        cropped = tf.map_fn(lambda img: tf.random_crop(img, [self.image_size,
+        cropped = tf.map_fn(lambda img: tf.compat.v1.random_crop(img, [self.image_size,
                                                              self.image_size,
                                                              3]), padded)
         flipped = tf.map_fn(lambda img: tf.image.random_flip_left_right(img), cropped)

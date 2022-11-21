@@ -27,12 +27,12 @@ class ModelAdapter():
         self.grad_dlr = tf.gradients(self.dlr, self.x_input)[0]
         
         # targeted dlr loss
-        self.y_target = tf.placeholder(tf.int64, shape=[None])
+        self.y_target = tf.compat.v1.placeholder(tf.int64, shape=[None])
         self.dlr_target = dlr_loss_targeted(self.logits, self.y_input, self.y_target, num_classes=self.num_classes)
         self.grad_target = tf.gradients(self.dlr_target, self.x_input)[0]
 
-        self.la = tf.placeholder(tf.int64, shape=[None])
-        self.la_target = tf.placeholder(tf.int64, shape=[None])
+        self.la = tf.compat.v1.placeholder(tf.int64, shape=[None])
+        self.la_target = tf.compat.v1.placeholder(tf.int64, shape=[None])
         la_mask = tf.one_hot(self.la, self.num_classes)
         la_target_mask = tf.one_hot(self.la_target, self.num_classes)
         la_logit = tf.reduce_sum(la_mask * self.logits, axis=1)

@@ -68,7 +68,8 @@ def discretize_uniform(x, levels, thermometer=False):
     Discretized version of x of shape [-1, height, width, channels * levels].
   """
   clipped_x = tf.clip_by_value(x, 0., 1.)
-  int_x = tf.to_int32((.99999 * clipped_x) * levels)
+  # int_x = tf.to_int32((.99999 * clipped_x) * levels)
+  int_x = tf.cast((.99999 * clipped_x) * levels, dtype=tf.int32)
   one_hot = tf.one_hot(
       int_x, depth=levels, on_value=1., off_value=0., dtype=tf.float32, axis=-1)
 

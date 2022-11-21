@@ -10,7 +10,7 @@ class Thermometer(robustml.model.Model):
     def __init__(self, sess):
         self._sess = sess
 
-        self._x = tf.placeholder(tf.float32, (1, 32, 32, 3))
+        self._x = tf.compat.v1.placeholder(tf.float32, (1, 32, 32, 3))
         self._encode = discretize_uniform(self._x/255.0, levels=LEVELS, thermometer=True)
 
         self._model = Model(

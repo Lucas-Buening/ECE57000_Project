@@ -18,8 +18,8 @@ class Attack:
         self.x = tf.Variable(np.zeros((1, 32, 32, 3), dtype=np.float32),
                                     name='modifier')
         self.x_scaled = tf.math.scalar_mul(255.0, self.x)
-        self.orig_xs = tf.placeholder(tf.float32, [None, 32, 32, 3])
-        self.ys = tf.placeholder(tf.int32, [None])
+        self.orig_xs = tf.compat.v1.placeholder(tf.float32, [None, 32, 32, 3])
+        self.ys = tf.compat.v1.placeholder(tf.int32, [None])
 
         # Approximation of the gradient for the backwards pass
         compare = tf.constant((256.0/LEVELS)*np.arange(-1,LEVELS-1).reshape((1,1,1,1,LEVELS)),
@@ -68,7 +68,7 @@ def main():
     args = parser.parse_args()
 
     # set up TensorFlow session
-    sess = tf.Session()
+    sess = tf.compat.v1.Session()
 
     # initialize a model
     model = Thermometer(sess)
@@ -93,25 +93,6 @@ def main():
     )
 
     print('attack success rate: %.2f%% (over %d data points)' % (success_rate*100, args.end-args.start))
-    
-    # from PIL import Image
-    
-    # x, y = provider[1]
-    # print("Start attack")
-    # adv = attack.run(np.copy(x), y, None)
-    
-    # original = np.ndarray.flatten(x)
-    # perturbed = np.ndarray.flatten(adv)
-    
-    # print(np.min(perturbed))
-    # print(np.max(perturbed))
-    # print(np.linalg.norm(original - perturbed, ord=np.inf))
-    
-    # im = Image.fromarray((x*255).astype(np.uint8))
-    # im.save("x.jpeg")
-    
-    # im = Image.fromarray((adv*255).astype(np.uint8))
-    # im.save("adv.jpeg")
 
 if __name__ == '__main__':
     main()
