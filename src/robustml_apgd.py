@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import autoattack.autopgd_base as apgd
 
-from BpdaAdapter import BpdaAdapter
+from .BpdaAdapter import BpdaAdapter
 
 class Attack:
     def __init__(self, sess, model, epsilon, num_steps=30, device=torch.device('cpu')):
