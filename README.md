@@ -32,7 +32,7 @@ If you are having trouble, then refer to the guide [here](https://conda.io/proje
 
 ## Retrieving the models and dataset
 ### Using setup.sh
-Navigate to the code folder, which should contain setup.sh. Open a terminal and run the following command:
+Navigate to the code folder, which should contain setup.sh. Open a terminal (not the Anaconda Prompt) and run the following command:
 
 ```
 bash setup.sh
