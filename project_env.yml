@@ -1,0 +1,20 @@
+name: project_env
+channels:
+  - conda-forge
+  - https://conda.anaconda.org/gurobi
+  - defaults
+dependencies:
+  - python=3.7
+  - ipykernel
+  - jupyter_client
+  - jupyter_core
+  - pip
+  - pip:
+    - matplotlib==3.2.2
+    - numpy==1.16.4
+    - pillow==5.4.1
+    - protobuf==3.20.3
+    - robustml==0.0.3
+    - tensorflow==1.14.0
+    - torch==1.13.0
+prefix: C:\Users\flint\anaconda3\envs\myenv
